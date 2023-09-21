@@ -2,8 +2,8 @@ import { groth16 } from "snarkjs";
 import { string } from "valibot";
 import { bidType } from "~/schemas/bid";
 
-const CIRCUIT_WASM_PATH = "src/assets/encodeHash.wasm";
-const CIRCUIT_ZKEY_PATH = "src/assets/circuit_final.zkey";
+const CIRCUIT_WASM_PATH = "src/assets/encHash/encodeHash.wasm";
+const CIRCUIT_ZKEY_PATH = "src/assets/encHash/circuit_final.zkey";
 export async function encHash(input: bidType) {
   const { publicSignals } = await groth16.fullProve(
     { ...input },
