@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { encHash } from "~/lib/encHash";
+import { encHash } from "~/lib/enc-hash-circuit";
 import { bidSchema } from "~/schemas/bid";
 
 export default async function handler(
