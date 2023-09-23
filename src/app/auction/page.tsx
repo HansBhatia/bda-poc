@@ -68,7 +68,9 @@ export default function Home() {
       const data = await response.json();
       setProcessedAuc(JSON.stringify(data, null, 2));
     } else {
-      console.error(await response.text());
+      const errorText = await response.text();
+      setProcessedAuc(errorText);
+      console.error(errorText);
     }
   };
 
