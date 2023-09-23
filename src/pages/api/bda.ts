@@ -17,6 +17,10 @@ export default async function handler(
     res.status(400).send("Invalid input type.");
     return;
   }
+  if (input.output.bids.length > 20) {
+    res.status(400).send("Too many bids.");
+    return;
+  }
   try {
     const bdaResults = blindDutchAuction({
       ...input.output,
