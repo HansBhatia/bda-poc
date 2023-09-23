@@ -15,6 +15,7 @@ export default function Home() {
     reservePrice: "9000",
   });
   const [processedAuc, setProcessedAuc] = useState("");
+  const [processing, setProcessing] = useState(false);
 
   const bidValues = useRef<bidInputType[]>(
     Array(numberInputs).fill({
@@ -35,42 +36,46 @@ export default function Home() {
   };
 
   const handleAuction = async () => {
-    if (processedAuc !== "") {
-      return;
-    }
-    // console.log("aucValues auc", aucValues);
-    // console.log("bidValues auc", bidValues.current);
-    // check if there are any empty string values
-    const isEmptyAucValues = Object.values(aucValues).some((x) => x === "");
-    isEmptyAucValues ? alert("Auction values contains empty value.") : null;
-    const isEmptyBidValues = bidValues.current
-      .map((obj) => Object.values(obj).some((x) => x === ""))
-      .some((x) => x);
-    isEmptyBidValues ? alert("Bid values contains empty value.") : null;
+    setProcessedAuc("");
+    setProcessing(true);
+    try {
+      // check if there are any empty string values
+      const isEmptyAucValues = Object.values(aucValues).some((x) => x === "");
+      isEmptyAucValues ? alert("Auction values contains empty value.") : null;
+      const isEmptyBidValues = bidValues.current
+        .map((obj) => Object.values(obj).some((x) => x === ""))
+        .some((x) => x);
+      isEmptyBidValues ? alert("Bid values contains empty value.") : null;
 
-    // start auction
-    const response = await fetch("/api/bda", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        auction: aucValues,
-        bids: bidValues.current.map((x) => {
-          return {
-            ...x,
-            aucId: aucValues.aucId,
-          };
+      // start auction
+      const response = await fetch("/api/bda", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          auction: aucValues,
+          bids: bidValues.current.map((x) => {
+            return {
+              ...x,
+              aucId: aucValues.aucId,
+            };
+          }),
         }),
-      }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      setProcessedAuc(JSON.stringify(data, null, 2));
-    } else {
-      const errorText = await response.text();
-      setProcessedAuc(errorText);
-      console.error(errorText);
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setProcessing(false);
+        setProcessedAuc(JSON.stringify(data, null, 2));
+      } else {
+        const errorText = await response.text();
+        setProcessing(false);
+        setProcessedAuc(errorText);
+        console.error(errorText);
+      }
+    } catch {
+      setProcessing(false);
+      setProcessedAuc("Error retrieving results. Check console?");
     }
   };
 
@@ -137,9 +142,16 @@ export default function Home() {
         variant="outline"
         className="bg-black text-white"
         onClick={handleAuction}
+        disabled={processing}
       >
         Run Auction
       </Button>
+      {processing ? (
+        <>
+          <Separator className="h-5" />
+          <div className="text-xl text-bold">Processing...</div>
+        </>
+      ) : null}
       {processedAuc !== "" && (
         <>
           <Separator className="h-5" />
