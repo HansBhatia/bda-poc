@@ -80,10 +80,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-center max-w-[80%] mx-auto overflow-hidden">
       <Separator className="h-10" />
       <h1 className="text-xl text-center">Auction Config</h1>
-      <div className="flex shrink-1 gap-6 justify-center">
+      <div className="grid grid-cols-4 gap-6">
         <div className="flex flex-col">
           <h2>Loan Amount</h2>
           <Input

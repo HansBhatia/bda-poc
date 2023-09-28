@@ -11,6 +11,10 @@ export const bdaInputSchema = object({
   salt: array(string()),
   bidAmounts: array(string()),
   bidPrices: array(string()),
+  sortedUid: array(string()),
+  sortedSalt: array(string()),
+  sortedBidAmounts: array(string()),
+  sortedBidPrices: array(string()),
   activations: array(string()),
   settleAmounts: array(string()),
 });

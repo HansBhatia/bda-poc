@@ -1,23 +1,8 @@
 import { MutableRefObject, useEffect, useState } from "react";
-import { object, string } from "valibot";
 import { Input } from "~/components/ui/input";
-import { bidInputType, bidType } from "~/schemas/bid";
-
-function getRandomInt(max: number) {
-  return Math.floor(Math.random() * max);
-}
-
-async function getHash(values: bidType) {
-  const response = await fetch("/api/hash?" + new URLSearchParams(values), {
-    method: "GET",
-  });
-  const hash = object({ hash: string() })._parse(await response.json()).output
-    ?.hash;
-  if (!hash) {
-    throw new Error("undefined hash");
-  }
-  return hash;
-}
+import { useGenerateRandomValues } from "~/lib/hooks/generateBidInputs";
+import { getHash } from "~/lib/utils";
+import { bidInputType } from "~/schemas/bid";
 
 function BidInput({
   aucId,
@@ -28,50 +13,18 @@ function BidInput({
   numberInputs: number;
   sendValues: MutableRefObject<bidInputType[]>;
 }) {
-  const [inputValues, setInputValues] = useState<bidInputType[]>(
-    Array(numberInputs).fill({
-      userId: "",
-      salt: "",
-      bidPrice: "",
-      bidAmount: "",
-      hash: "",
-    })
-  );
+  const { loading, values } = useGenerateRandomValues(numberInputs, aucId);
+  const [inputValues, setInputValues] = useState<bidInputType[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    // Generate random initial values when the component mounts
-    const generateRandomValues = async () => {
-      const promises = Array(inputValues.length)
-        .fill(null)
-        .map(async (_, index) => {
-          const uid = index.toString();
-          const salt = getRandomInt(9007199254740991).toString();
-          const bidPrice = getRandomInt(10000).toString();
-          const bidAmount = getRandomInt(1000000).toString();
-          const hash = await getHash({
-            aucId,
-            bidAmount,
-            bidPrice,
-            salt,
-            uid,
-          });
-
-          return {
-            uid,
-            salt,
-            bidPrice,
-            bidAmount,
-            hash,
-          };
-        });
-
-      const resolvedValues = await Promise.all(promises);
-      setInputValues(resolvedValues);
-      sendValues.current = resolvedValues;
-    };
-
-    generateRandomValues();
-  }, [aucId, inputValues.length, sendValues]);
+    if (!loading) {
+      // Data has been loaded, you can set inputValues and sendValues here
+      setInputValues(values);
+      sendValues.current = values;
+      setDataLoaded(true);
+    }
+  }, [loading, values, sendValues]);
 
   const handleInputChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -105,12 +58,13 @@ function BidInput({
     }
   };
 
+  // How do i make it so that the elements in the grid do not resize?
   const generateDivs = () => {
     let rows = [];
     for (let i = 0; i < inputValues.length; i++) {
       rows.push(
-        <div className="flex shrink-1 gap-6 justify-center" key={i}>
-          <div className="flex flex-col py-1 basis-1/5">
+        <div className="grid grid-cols-6 gap-6 max-w-[90%]" key={i}>
+          <div className="flex flex-col w-full">
             <p>User ID</p>
             <Input
               value={inputValues[i].uid}
@@ -118,7 +72,7 @@ function BidInput({
               required
             />
           </div>
-          <div className="flex flex-col py-1 basis-1/5">
+          <div className="flex flex-col py-1 w-full">
             <p>Salt</p>
             <Input
               value={inputValues[i].salt}
@@ -126,7 +80,7 @@ function BidInput({
               required
             />
           </div>
-          <div className="flex flex-col py-1 basis-1/5">
+          <div className="flex flex-col py-1 w-full">
             <p>Bid Price</p>
             <Input
               value={inputValues[i].bidPrice}
@@ -134,7 +88,7 @@ function BidInput({
               required
             />
           </div>
-          <div className="flex flex-col py-1 basis-1/5">
+          <div className="flex flex-col py-1 w-full">
             <p>Bid Amount</p>
             <Input
               value={inputValues[i].bidAmount}
@@ -142,9 +96,11 @@ function BidInput({
               required
             />
           </div>
-          <div className="flex flex-col py-1 basis-2/5">
+          <div className="flex flex-col py-1 w-full">
             <p>Hash</p>
-            <div>{inputValues[i].hash}</div>
+            <div className="align-middle leading-[40px] text-sm">
+              {inputValues[i].hash}
+            </div>
           </div>
         </div>
       );
@@ -154,7 +110,8 @@ function BidInput({
 
   return (
     <div className="flex flex-col content-center items-start">
-      {generateDivs()}
+      {loading && <div>Loading...</div>}
+      {dataLoaded && generateDivs()}
     </div>
   );
 }
