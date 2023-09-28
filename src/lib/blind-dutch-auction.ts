@@ -37,7 +37,7 @@ export function shuffle<T>(array: T[]): T[] {
 export function blindDutchAuction({
   auction,
   bids,
-  maxSize = 20,
+  maxSize = 10,
   decs = 10,
 }: {
   auction: aucType;

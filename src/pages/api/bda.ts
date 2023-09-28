@@ -25,7 +25,7 @@ export default async function handler(
     const bdaResults = blindDutchAuction({
       ...input.output,
       decs: 10,
-      maxSize: 20,
+      maxSize: 10,
     });
     const bdaCicuitResults = await runBlindDutchAuction(bdaResults);
     res
