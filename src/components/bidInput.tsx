@@ -63,7 +63,7 @@ function BidInput({
     let rows = [];
     for (let i = 0; i < inputValues.length; i++) {
       rows.push(
-        <div className="grid grid-cols-6 gap-6 max-w-[90%]" key={i}>
+        <div className="grid grid-cols-6 gap-6 w-full" key={i}>
           <div className="flex flex-col w-full">
             <p>User ID</p>
             <Input
@@ -110,7 +110,7 @@ function BidInput({
 
   return (
     <div className="flex flex-col content-center items-start">
-      {loading && <div>Loading...</div>}
+      {loading && <div>Populating random bids...</div>}
       {dataLoaded && generateDivs()}
     </div>
   );
