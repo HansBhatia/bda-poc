@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useState } from "react";
+import { MutableRefObject, startTransition, useEffect, useState } from "react";
 import { Input } from "~/components/ui/input";
 import { useGenerateRandomValues } from "~/lib/hooks/generateBidInputs";
 import { getHash } from "~/lib/utils";
@@ -36,26 +36,32 @@ function BidInput({
       ...newInputValues[rowIndex],
       [fieldName]: event.target.value,
     };
+
     newInputValues[rowIndex].hash = "Computing...";
     setInputValues(newInputValues);
-
-    try {
-      const hash = await getHash({
+    sendValues.current = newInputValues;
+    startTransition(() => {
+      getHash({
         aucId: aucId,
         bidAmount: newInputValues[rowIndex].bidAmount,
         bidPrice: newInputValues[rowIndex].bidPrice,
         salt: newInputValues[rowIndex].salt,
         uid: newInputValues[rowIndex].uid,
-      });
-      const vals = [...newInputValues];
-      vals[rowIndex].hash = hash;
-      setInputValues(vals);
-      sendValues.current = vals;
-    } catch (error) {
-      console.error("Error computing hash:", error);
-      newInputValues[rowIndex].hash = "Error";
-      setInputValues(newInputValues);
-    }
+      })
+        .then((hash) => {
+          setInputValues((prev) => {
+            if (newInputValues[rowIndex].bidPrice === prev[rowIndex].bidPrice) {
+              prev[rowIndex].hash = hash;
+              return [...prev];
+            } else return prev;
+          });
+        })
+        .catch((error) => {
+          console.error("Error computing hash:", error);
+          newInputValues[rowIndex].hash = "Error";
+          setInputValues(newInputValues);
+        });
+    });
   };
 
   // How do i make it so that the elements in the grid do not resize?
